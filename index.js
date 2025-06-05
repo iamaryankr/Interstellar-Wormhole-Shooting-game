@@ -70,7 +70,7 @@ const tubeGeo = new THREE.TubeGeometry(spline, 222, 0.65, 16, true);
 // create edges geometry from the spline
 const tubeColor = 0x00ccff;
 const edges = new THREE.EdgesGeometry(tubeGeo, 0.2);
-const lineMat = new THREE.LineBasicMaterial({ color: tubeColor });
+const lineMat = new THREE.LineBasicMaterial({ color: 0xff0000 });
 const tubeLines = new THREE.LineSegments(edges, lineMat);
 scene.add(tubeLines);
 
