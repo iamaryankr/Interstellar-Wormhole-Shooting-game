@@ -5,6 +5,9 @@ import { RenderPass } from "jsm/postprocessing/RenderPass.js";
 import { UnrealBloomPass } from "jsm/postprocessing/UnrealBloomPass.js";
 import getStarfield from "./getStarfield.js";
 
+let score = 0;
+const scoreDiv = document.getElementById("score");
+
 let w = window.innerWidth;
 let h = window.innerHeight;
 
@@ -89,7 +92,7 @@ const size = 0.075;
 const boxGeo = new THREE.BoxGeometry(size, size, size);
 
 const numBoxes = 55;
-for(let i = 0; i < numBoxes; i ++) {
+for (let i = 0; i < numBoxes; i++) {
   const p = (i / numBoxes + Math.random() * 0.1) % 1;
   const pos = tubeGeo.parameters.path.getPointAt(p);
 
@@ -98,7 +101,7 @@ for(let i = 0; i < numBoxes; i ++) {
   const boxMat = new THREE.MeshBasicMaterial({
     color,
     transparent: true,
-    opacity: 0.0
+    opacity: 0.0,
   });
 
   const hitBox = new THREE.Mesh(boxGeo, boxMat);
@@ -128,7 +131,7 @@ for(let i = 0; i < numBoxes; i ++) {
   scene.add(boxLines);
 }
 
-// CROSSHAIRS
+// ── CROSSHAIRS ──
 let mousePos = new THREE.Vector2();
 const crosshairs = new THREE.Group();
 crosshairs.position.z = -1;
@@ -142,7 +145,7 @@ const lineGeo = new THREE.BufferGeometry();
 const lineVerts = [0, 0.05, 0, 0, 0.02, 0];
 lineGeo.setAttribute("position", new THREE.Float32BufferAttribute(lineVerts, 3));
 
-for(let i = 0; i < 4; i ++) {
+for (let i = 0; i < 4; i++) {
   const line = new THREE.Line(lineGeo, crossMat);
   line.rotation.z = i * 0.5 * Math.PI;
   crosshairs.add(line);
@@ -156,6 +159,8 @@ let impactBox = null;
 
 let lasers = [];
 const laserGeo = new THREE.IcosahedronGeometry(0.05, 2);
+
+// ──────────────────────────────────────────────────────────────────────────
 
 function getLaserBolt() {
   const laserMat = new THREE.MeshBasicMaterial({
@@ -180,16 +185,19 @@ function getLaserBolt() {
 
   let intersects = raycaster.intersectObjects([...boxGroup.children, tubeHitArea], true);
 
-  if(intersects.length > 0){
+  if (intersects.length > 0) {
     impactPos.copy(intersects[0].point);
     impactColor.copy(intersects[0].object.material.color);
 
-    if(intersects[0].object.name === 'box') {
+    if (intersects[0].object.name === 'box') {
       impactBox = intersects[0].object.userData.box;
       boxGroup.remove(intersects[0].object);
 
       fitzSound.stop();
       fitzSound.play();
+
+      score += 1;
+      scoreDiv.textContent = `Score: ${score}`;
     }
   }
 
@@ -197,12 +205,12 @@ function getLaserBolt() {
   let opacity = 1.0;
   let isExploding = false;
 
-  function update(){
+  function update() {
     if(active === true) {
-      if(isExploding === false) {
+      if(isExploding === false){
         laserBolt.position.sub(laserDirection);
 
-        if (laserBolt.position.distanceTo(impactPos) < 0.5) {
+        if(laserBolt.position.distanceTo(impactPos) < 0.5){
           laserBolt.position.copy(impactPos);
           laserBolt.material.color.set(impactColor);
           isExploding = true;
@@ -210,12 +218,11 @@ function getLaserBolt() {
         }
       }
       else {
-        if(opacity > 0.01) {
+        if(opacity > 0.01){
           scale += 0.2;
           opacity *= 0.85;
-
         }
-        else {
+        else{
           opacity = 0.0;
           scale = 0.01;
           active = false;
@@ -227,6 +234,7 @@ function getLaserBolt() {
       }
     }
   }
+
   laserBolt.userData = { update, active };
   return laserBolt;
 }
